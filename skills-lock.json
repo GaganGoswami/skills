@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "skills": {
+    "token-saver": {
+      "source": "gagangoswami/skills",
+      "sourceType": "github",
+      "skillPath": "skills/productivity/token-saver/SKILL.md",
+      "computedHash": ""
+    },
+    "debug": {
+      "source": "gagangoswami/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/debug/SKILL.md",
+      "computedHash": ""
+    },
+    "plan-with-me": {
+      "source": "gagangoswami/skills",
+      "sourceType": "github",
+      "skillPath": "skills/productivity/plan-with-me/SKILL.md",
+      "computedHash": ""
+    },
+    "plan-with-me-with-docs": {
+      "source": "gagangoswami/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/plan-with-me-with-docs/SKILL.md",
+      "computedHash": ""
+    },
+    "arch-audit": {
+      "source": "gagangoswami/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/arch-audit/SKILL.md",
+      "computedHash": ""
+    },
+    "init-skills": {
+      "source": "gagangoswami/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/init-skills/SKILL.md",
+      "computedHash": ""
+    },
+    "tdd": {
+      "source": "gagangoswami/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/tdd/SKILL.md",
+      "computedHash": ""
+    },
+    "to-tasks": {
+      "source": "gagangoswami/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/to-tasks/SKILL.md",
+      "computedHash": ""
+    },
+    "to-prd": {
+      "source": "gagangoswami/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/to-prd/SKILL.md",
+      "computedHash": ""
+    },
+    "triage": {
+      "source": "gagangoswami/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/triage/SKILL.md",
+      "computedHash": ""
+    },
+    "big-picture": {
+      "source": "gagangoswami/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/big-picture/SKILL.md",
+      "computedHash": ""
+    },
+    "forge-skill": {
+      "source": "gagangoswami/skills",
+      "sourceType": "github",
+      "skillPath": "skills/productivity/forge-skill/SKILL.md",
+      "computedHash": ""
+    }
+  }
+}
