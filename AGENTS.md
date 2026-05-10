@@ -4,7 +4,7 @@ Guidance for AI agents working in this repository.
 
 ## Agent skills
 
-This repo ships 13 agent skills in two categories. Install via:
+This repo ships 20 agent skills in two categories. Install via:
 
 ```bash
 npx skills@latest add gagangoswami/skills
@@ -23,7 +23,14 @@ npx skills@latest add gagangoswami/skills
 | `to-prd` | `skills/engineering/to-prd/` | Turn conversation context into a PRD |
 | `triage` | `skills/engineering/triage/` | Triage issues through a state machine |
 | `big-picture` | `skills/engineering/big-picture/` | Zoom out to see system-level structure |
-| `plan-and-build-with-me` | `skills/engineering/plan-and-build-with-me/` | tep-by-step guided build-and-learn sessions |
+| `plan-and-build-with-me` | `skills/engineering/plan-and-build-with-me/` | Step-by-step guided build-and-learn sessions |
+| `repo-intelligence` | `skills/engineering/repo-intelligence/` | Build service graphs, API maps, and dependency analysis |
+| `semantic-memory` | `skills/engineering/semantic-memory/` | Compress repos into layered summaries for agent retrieval |
+| `architecture-lineage` | `skills/engineering/architecture-lineage/` | Reconstruct why the system evolved — ADRs, PR history, incidents |
+| `skill-factory` | `skills/engineering/skill-factory/` | Capture session patterns as permanent reusable skills |
+| `prompt-coach` | `skills/engineering/prompt-coach/` | Score and improve prompts before they cause clarification loops |
+| `multi-agent-orchestrator` | `skills/engineering/multi-agent-orchestrator/` | Parallel subagent tasks in isolated worktrees with merge validation |
+| `ai-architecture` | `skills/engineering/ai-architecture/` | Design AI-native systems: patterns, models, memory, evaluation, security |
 
 ### Productivity skills
 
