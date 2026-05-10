@@ -1,511 +1,278 @@
-# How to Build Complex Skills for Coding Agents
+This is a rich design challenge. Here's a comprehensive, deeply thought-out skill architecture for a **Mythos-style vulnerability scanner** that works across Claude Code, GitHub Copilot (GHCP), and OpenAI Codex.
 
-A complex skill is not:
+***
 
-```text id="7y6fkg"
-"one big prompt"
+# Vulnerability Scanner Skill: Design Blueprint
+
+The **Agent Skills open standard** is now adopted by Claude Code, GitHub Copilot, Codex CLI, Cursor, and Gemini CLI — meaning a single `SKILL.md` file you author works across all of them without modification. This is your primary deployment vehicle. [dev](https://dev.to/maximsaplin/ai-agents-vs-code-vulnerabilities-was-anthropic-mythos-a-big-deal-or-fear-mongering-8ci)
+
+***
+
+## Skill Architecture Overview
+
+The skill should be a **Capability Uplift** skill — it gives agents abilities they don't have out of the box (running real static analysis, exploit modeling, threat classification) rather than just describing vulnerabilities. The structure is: [firecrawl](https://www.firecrawl.dev/blog/best-claude-code-skills)
+
+```
+.claude/skills/
+└── vuln-scanner/
+    ├── SKILL.md              ← Frontmatter + routing logic
+    ├── threat-model.md       ← Repo-specific threat modeling
+    ├── static-analysis.md    ← CodeQL / Semgrep execution
+    ├── variant-analysis.md   ← Cross-codebase pattern matching
+    ├── exploit-poc.md        ← PoC generation workflow
+    └── report-template.md    ← Structured findings output
 ```
 
-A real enterprise-grade skill is:
+Claude loads only the `SKILL.md` name/description (~100 tokens) at startup, then pulls in sub-files on demand — keeping context efficient. [claude](https://claude.com/blog/how-to-create-skills-key-steps-limitations-and-examples)
 
-```text id="y3s7n0"
-Goal
- + Context Intelligence
- + Memory
- + Tools
- + Policies
- + Workflows
- + Validation
- + Recovery
- + Observability
- + Runtime Adaptation
+***
+
+## The SKILL.md File
+
+This is the complete, production-ready skill definition:
+
+```markdown
+---
+name: vuln-scanner
+description: >
+  Autonomous vulnerability scanning skill inspired by Anthropic Mythos methodology.
+  Activates when the user asks to: scan for security vulnerabilities, audit the repo
+  for CVEs, find exploitable code paths, perform threat modeling, run static analysis,
+  detect OWASP Top 10 issues, check for injection/auth/crypto flaws, or generate
+  proof-of-concept exploits for found vulnerabilities. NOT for general code review
+  or linting. Use for security-specific analysis workflows on any language or framework.
+license: MIT
+---
+
+# Vulnerability Scanner — Mythos-Inspired Security Skill
+
+## Overview
+This skill runs a structured, multi-phase vulnerability audit against the current
+repository, using a methodology modeled after Anthropic's Mythos security research.
+It combines static analysis tooling, semantic code reasoning, and variant analysis
+to find real, exploitable vulnerabilities — not just theoretical checklist items.
+
+## Phase 1: Repo Threat Modeling
+Read [threat-model.md](threat-model.md) first. Build a project-specific attack surface
+map before scanning. Identify: trust boundaries, external inputs, authentication paths,
+crypto usage, and data sinks. This prevents generic false positives.
+
+## Phase 2: Static Analysis
+Read [static-analysis.md](static-analysis.md). Execute CodeQL and/or Semgrep
+against the repository. Map results to CWE categories. Prioritize by exploitability.
+
+## Phase 3: Variant Analysis
+Read [variant-analysis.md](variant-analysis.md). After finding one vulnerability,
+search for structural variants across the entire codebase. One XSS often means
+twenty more in the same pattern.
+
+## Phase 4: Exploit PoC Generation
+Read [exploit-poc.md](exploit-poc.md). For high-confidence findings, generate a
+minimal proof-of-concept. A working PoC transforms a low-priority ticket into
+an immediate action item.
+
+## Phase 5: Report
+Read [report-template.md](report-template.md). Output a structured findings report
+in SARIF-compatible format with file:line citations, CVSS scores, and remediation
+guidance.
+
+## Routing Decision Tree
+- User says "scan" or "audit" → Run all 5 phases
+- User says "find variants of [vuln]" → Phase 3 only
+- User says "threat model" → Phase 1 only
+- User says "generate PoC" → Phase 4 only
+- User says "fix vuln at [file:line]" → Phase 5 remediation path
 ```
 
----
+***
 
-# 1. Universal Skill Architecture
+## Phase Sub-Files (Key Design Details)
 
-Every advanced skill should follow this structure.
+### `threat-model.md` — Phase 1
+```markdown
+## Threat Modeling Workflow
 
-```yaml id="i7ehjt"
-skill:
-  metadata:
-  objectives:
-  triggers:
-  inputs:
-  outputs:
+1. Map the repo structure: identify entry points (HTTP handlers, CLI args, file parsers,
+   IPC channels, env vars)
+2. Classify trust zones: external (untrusted), internal (semi-trusted), privileged
+3. Trace data flows from each entry point to sinks (DB queries, shell exec, file writes,
+   serialization, auth checks)
+4. Build a STRIDE threat model: Spoofing, Tampering, Repudiation, Info Disclosure,
+   DoS, Elevation of Privilege
+5. Output: a repo-specific threat matrix that drives Phase 2 scanner config
 
-  context_layer:
-  memory_layer:
-  reasoning_layer:
-  planning_layer:
-  execution_layer:
-  validation_layer:
-  recovery_layer:
-  observability_layer:
-  governance_layer:
+## Framework Detection
+Auto-detect framework and load relevant rule packs:
+- Express/Node → inject SSRF, prototype pollution, ReDoS rules
+- Spring Boot/Java → inject deserialization, OGNL injection, SSRF rules
+- Django/Flask → inject SSTI, SQLi, CSRF bypass rules
+- React/Next.js → inject XSS, client-side path traversal, CSP bypass rules
 ```
 
----
+***
 
-# 2. Core Concepts Before Building Skills
+### `static-analysis.md` — Phase 2
 
----
+```markdown
+## Static Analysis Execution
 
-# A. Skills Are Runtime Systems
+### Semgrep (preferred — no build required)
+```bash
+# Install if not present
+pip install semgrep
 
-NOT:
+# Run OWASP Top 10 + secrets detection
+semgrep scan --config=p/owasp-top-ten \
+             --config=p/secrets \
+             --config=p/javascript \
+             --config=p/python \
+             --sarif --output=findings.sarif .
 
-```text id="0a7pjq"
-static prompts
+# Parse and triage
+cat findings.sarif | jq '.runs[].results[] | {rule: .ruleId, file: .locations.physicalLocation.artifactLocation.uri, line: .locations.physicalLocation.region.startLine, severity: .properties.severity}'
 ```
 
-BUT:
-
-```text id="shpsph"
-adaptive execution systems
+### CodeQL (deep semantic — requires build)
+```bash
+codeql database create codeql-db --language=javascript
+codeql analyze codeql-db javascript-security-extended.qls \
+  --format=sarif-latest --output=codeql-findings.sarif
 ```
 
----
+## Triage Rules
+- CRITICAL: RCE, auth bypass, SQLi with confirmed data sink
+- HIGH: XSS, SSRF, path traversal with user-controlled input
+- MEDIUM: Insecure crypto, hardcoded secrets, missing auth checks
+- LOW: Information disclosure, verbose error messages
 
-# B. Skills Need State
-
-Need:
-
-* working memory
-* execution memory
-* repo memory
-* organizational memory
-
----
-
-# C. Skills Need Tooling
-
-Example tools:
-
-* terminal
-* docker
-* kubectl
-* git
-* AST parser
-* vector DB
-* repo graph
-* deployment APIs
-
----
-
-# D. Skills Need Evaluation
-
-Without evaluation:
-
-```text id="ylpnw3"
-agents hallucinate silently
+## False Positive Filter
+Before reporting, verify each finding by:
+1. Tracing the input source — is it actually user-controlled?
+2. Checking if sanitization exists between source and sink
+3. Confirming the code path is reachable from a real entry point
 ```
 
----
+***
 
-# E. Skills Need Recovery
+### `variant-analysis.md` — Phase 3 (The Mythos Method)
 
-Without recovery:
+This is the most powerful phase — it's what separates Mythos-class scanning from ordinary checkers: [dev](https://dev.to/maximsaplin/ai-agents-vs-code-vulnerabilities-was-anthropic-mythos-a-big-deal-or-fear-mongering-8ci)
 
-```text id="ol4b4k"
-complex workflows fail constantly
+```markdown
+## Variant Analysis: Find the Vulnerability Family
+
+After finding one vulnerability, search for all structural siblings in the codebase.
+This is the core of Anthropic's Mythos methodology — one confirmed bug is a pattern.
+
+### Process
+1. Extract the vulnerable code pattern (AST fingerprint or grep pattern)
+2. Use Semgrep to write a custom rule matching the same structural pattern:
+
+```yaml
+rules:
+  - id: variant-of-found-vuln
+    patterns:
+      - pattern: $FUNC($USER_INPUT, ...)  # generalize the finding
+      - pattern-not: $FUNC(sanitize($USER_INPUT), ...)
+    message: Potential variant of confirmed $VULN_TYPE
+    languages: [javascript, python, java]
+    severity: WARNING
 ```
 
----
+3. Run cross-repo scan with the custom rule
+4. Group variants by: same CWE, same developer (git blame), same module
+5. Bulk-report as a vulnerability family — not individual tickets
 
-
-
-# 4. Deep Dive — AI Architecture Skill
-
-This is MUCH more advanced.
-
----
-
-# Goal
-
-Design AI-native systems automatically.
-
----
-
-# Responsibilities
-
-Skill should:
-
-* understand business problem
-* determine AI patterns
-* choose architecture
-* select models
-* define memory strategy
-* define orchestration strategy
-* define evaluation strategy
-
----
-
-# STEP 1 — Business Understanding Layer
-
-Input:
-
-```text id="d0j4y4"
-"Build KYC compliance co-pilot"
+### Variant Categories to Always Check
+- Auth bypass → check all auth middleware chains
+- SQLi in one query → check all ORM raw() or execute() calls
+- SSRF in one fetch → check all outbound HTTP calls
+- Hardcoded secret in one file → scan all config/env files
+- XSS in one render → check all innerHTML / dangerouslySetInnerHTML usages
 ```
 
-Skill extracts:
+***
 
-* domain
-* workflows
-* users
-* regulations
-* latency needs
-* data sensitivity
+### `exploit-poc.md` — Phase 4
 
----
+```markdown
+## Proof-of-Concept Generation
 
-# STEP 2 — AI Pattern Selection
+For CRITICAL and HIGH findings with confirmed reachable paths, generate a minimal PoC.
 
-Skill decides:
+### PoC Template Structure
+```
+## Vulnerability: [CWE-XXX] [Name] at [file:line]
 
-```text id="7nkmrl"
-RAG?
-Agents?
-Workflow AI?
-Multi-agent?
-Realtime?
-Fine-tuning?
-Reasoning models?
-Hybrid retrieval?
+**Attack Vector**: [describe the exact input path]
+**Preconditions**: [what attacker needs — unauthenticated? specific role?]
+
+**PoC Payload**:
+[minimal payload — curl command, HTTP request, code snippet]
+
+**Expected Result**: [what happens when exploit succeeds]
+**Impact**: CVSS [score] — [brief impact statement]
+
+**Recommended Fix**: [concrete code change with before/after]
 ```
 
----
-
-# STEP 3 — Architecture Planning
-
-Generates:
-
-```text id="bblc4n"
-Frontend
-Backend
-LLM Layer
-RAG Layer
-Memory Layer
-Orchestration Layer
-Evaluation Layer
-Observability Layer
-Security Layer
+### Safety Guardrails
+- Generate PoCs only for code in the current repo
+- Do NOT generate PoCs for third-party infrastructure beyond the repo's scope
+- Omit weaponized payloads for vulnerabilities in production systems
+  unless explicitly requested by repo owner
+- Flag any finding that could be a supply-chain attack vector for immediate escalation
 ```
 
----
+***
 
-# STEP 4 — Model Routing Decisions
+## Cross-Agent Compatibility
 
-Skill determines:
+Since the Agent Skills spec is an open standard, this skill installs identically on all three platforms: [firecrawl](https://www.firecrawl.dev/blog/best-claude-code-skills)
 
-* GPT-5.5?
-* local models?
-* Claude?
-* embedding models?
-* reasoning models?
+| Platform | Install Location | Activation |
+|---|---|---|
+| **Claude Code** | `.claude/skills/vuln-scanner/` | Automatic on security keywords |
+| **GitHub Copilot** | `.github/agents/vuln-scanner.md` (flatten to single file)  [techcommunity.microsoft](https://techcommunity.microsoft.com/blog/azureinfrastructureblog/vs-code-custom-agents-ai-powered-terraform-security-scanning-in-the-ide/4507903) | `@vuln-scanner` in chat |
+| **OpenAI Codex CLI** | `.codex/skills/vuln-scanner/` | Automatic + `/vuln-scan` command |
 
----
+For GHCP specifically, you may need to flatten the multi-file structure into a single `.github/agents/vuln-scanner.md` with a security gate: a grep check for `CRITICAL VULNERABILITY FOUND` that fails the PR check if triggered. [eliostruyf](https://www.eliostruyf.com/custom-security-agent-github-copilot-actions/)
 
-# STEP 5 — Memory Strategy
+***
 
-Chooses:
+## CI/CD Security Gate Integration
 
-* vector memory
-* episodic memory
-* semantic memory
-* organizational memory
+Pair the skill with a GitHub Actions pipeline for continuous enforcement:
 
----
-
-# STEP 6 — Agent Architecture Planning
-
-Determines:
-
-* single agent?
-* planner/executor?
-* swarm?
-* hierarchical orchestration?
-
----
-
-# STEP 7 — Evaluation Architecture
-
-Defines:
-
-* hallucination checks
-* benchmark datasets
-* regression evaluation
-* trace analysis
-
----
-
-# FINAL AI Architecture Skill
-
-```text id="f1jjlwm"
-AI Architecture Skill
-    ├── Business Understanding
-    ├── AI Pattern Selector
-    ├── Model Router
-    ├── RAG Planner
-    ├── Agent Planner
-    ├── Memory Planner
-    ├── Evaluation Planner
-    ├── Security Planner
-    └── Deployment Planner
+```yaml
+# .github/workflows/vuln-scan.yml
+name: AI Vulnerability Scan
+on: [pull_request]
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run vuln-scanner skill via Claude Code
+        run: claude -p "Run vuln-scanner on this PR diff" --output report.md
+      - name: Security Gate
+        run: |
+          if grep -q "CRITICAL" report.md; then
+            echo "Critical vulnerability found — blocking merge"
+            exit 1
+          fi
 ```
 
----
+***
 
-# 5. Deep Dive — Multi-Agent Orchestration Skill
+## What Makes This "Mythos-Class"
 
-This is one of the hardest possible skills.
+Anthropic's Mythos model demonstrated that AI can autonomously find and exploit real vulnerabilities in production codebases like the Linux kernel. The three design choices that replicate this are: [dev](https://dev.to/maximsaplin/ai-agents-vs-code-vulnerabilities-was-anthropic-mythos-a-big-deal-or-fear-mongering-8ci)
 
----
+1. **Repo-specific threat modeling first** — not a generic OWASP checklist, but a structural map of *your* code's attack surface [shawnkanungo](https://shawnkanungo.com/blog/openai-codex-security-ai-agent-finds-code-vulnerabilities)
+2. **Variant analysis as a first-class phase** — finding one bug means finding the whole family, which is how Mythos achieved scale [dev](https://dev.to/maximsaplin/ai-agents-vs-code-vulnerabilities-was-anthropic-mythos-a-big-deal-or-fear-mongering-8ci)
+3. **Sandboxed PoC validation** — confirming exploitability before reporting, which is how Codex Security eliminates false positives [shawnkanungo](https://shawnkanungo.com/blog/openai-codex-security-ai-agent-finds-code-vulnerabilities)
 
-# Goal
+The Trail of Bits security skills (CodeQL + Semgrep execution) are the best existing reference implementation and a strong complement to this custom skill. [firecrawl](https://www.firecrawl.dev/blog/best-claude-code-skills)
 
-Coordinate autonomous engineering swarms.
-
----
-
-# Responsibilities
-
-Skill must:
-
-* spawn agents
-* coordinate execution
-* manage dependencies
-* merge outputs
-* resolve conflicts
-* optimize token usage
-* recover failures
-
----
-
-# STEP 1 — Dynamic Agent Registry
-
-Skill maintains registry:
-
-```yaml id="c4z8i7"
-agents:
-  backend_agent:
-  frontend_agent:
-  db_agent:
-  test_agent:
-  security_agent:
-```
-
----
-
-# STEP 2 — Task Decomposition Engine
-
-Input:
-
-```text id="8fjlwm"
-Implement customer onboarding feature
-```
-
-Planner decomposes:
-
-```text id="qdxlgq"
-- schema work
-- API work
-- frontend work
-- tests
-- deployment
-```
-
----
-
-# STEP 3 — Dependency Graph Generation
-
-```text id="zdjlwm"
-DB schema
-   ->
-Backend API
-   ->
-Frontend UI
-```
-
----
-
-# STEP 4 — Parallel Execution Planning
-
-Detects independent tasks.
-
-Example:
-
-```text id="aex0tm"
-Frontend
-and
-Test setup
-can run simultaneously
-```
-
----
-
-# STEP 5 — Shared Memory Bus
-
-All agents write to:
-
-* task memory
-* repo memory
-* architecture memory
-* execution memory
-
----
-
-# STEP 6 — Conflict Resolution Engine
-
-Critical problem.
-
-Example:
-
-```text id="jlwm4u"
-2 agents edit same file
-```
-
-Need:
-
-* merge strategy
-* locking
-* ownership
-* semantic merge
-
----
-
-# STEP 7 — Runtime Coordination
-
-Orchestrator monitors:
-
-* failures
-* token consumption
-* deadlocks
-* retries
-* agent health
-
----
-
-# STEP 8 — Recovery Mechanisms
-
-Example:
-
-```text id="q8l3t6"
-Frontend agent fails
-    ->
-spawn recovery agent
-    ->
-retry with smaller scope
-```
-
----
-
-# STEP 9 — Evaluation Layer
-
-Evaluate:
-
-* correctness
-* consistency
-* architecture alignment
-* test coverage
-* policy compliance
-
----
-
-# STEP 10 — PR Generation
-
-Final orchestration:
-
-* consolidate changes
-* generate changelog
-* summarize reasoning
-* create PR
-
----
-
-# FINAL Multi-Agent Skill Architecture
-
-```text id="7fjlwm"
-Multi-Agent Skill
-   ├── Agent Registry
-   ├── Planner
-   ├── DAG Generator
-   ├── Scheduler
-   ├── Memory Bus
-   ├── Coordination Engine
-   ├── Merge Engine
-   ├── Recovery Engine
-   ├── Evaluation Engine
-   └── PR Engine
-```
-
----
-
-# 6. Critical Engineering Patterns
-
----
-
-# A. DAG-Based Execution
-
-Avoid:
-
-```text id="prmjlwm"
-linear workflows
-```
-
-Use:
-
-```text id="8wz2ps"
-dependency graphs
-```
-
----
-
-# B. Runtime Adaptation
-
-Skill changes behavior based on:
-
-* repo size
-* complexity
-* failures
-* token budget
-* latency
-
----
-
-# C. Hierarchical Orchestration
-
-```text id="mjlwm7"
-Orchestrator
-   ->
-specialized orchestrators
-   ->
-worker agents
-```
-
----
-
-# D. Human Approval Gates
-
-Required for:
-
-* deployments
-* destructive actions
-* schema changes
-* production updates
-
----
-
-# 7. Suggested Tech Stack
-
----
-
-Complex skills are the foundational building blocks of:
-
-* autonomous SDLC
-* enterprise AI engineering
-* self-healing software systems
-* AI-native engineering organizations
-* next-generation coding agents beyond Copilot/Codex/Claude Code.
+Would you like me to generate the complete file set ready to drop into your repo, or would you prefer to customize the language/framework targets first (TypeScript/Node, Java Spring, Python Django, etc.)?
