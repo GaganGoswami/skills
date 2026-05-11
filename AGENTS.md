@@ -4,7 +4,7 @@ Guidance for AI agents working in this repository.
 
 ## Agent skills
 
-This repo ships 20 agent skills in two categories. Install via:
+This repo ships 26 agent skills in two categories. Install via:
 
 ```bash
 npx skills@latest add gagangoswami/skills
@@ -31,6 +31,11 @@ npx skills@latest add gagangoswami/skills
 | `prompt-coach` | `skills/engineering/prompt-coach/` | Score and improve prompts before they cause clarification loops |
 | `multi-agent-orchestrator` | `skills/engineering/multi-agent-orchestrator/` | Parallel subagent tasks in isolated worktrees with merge validation |
 | `ai-architecture` | `skills/engineering/ai-architecture/` | Design AI-native systems: patterns, models, memory, evaluation, security |
+| `assumption-hunter` | `skills/engineering/assumption-hunter/` | Surface hidden assumptions in plans, designs, and code before they cause rework |
+| `first-principles` | `skills/engineering/first-principles/` | Deconstruct any problem to irreducible truths and rebuild from scratch |
+| `decision-cascade` | `skills/engineering/decision-cascade/` | Map 2nd and 3rd order consequences of a decision before committing |
+| `knowledge-spike` | `skills/engineering/knowledge-spike/` | Structured 30-minute learning sprint with reusable TIL card output |
+| `session-handoff` | `skills/engineering/session-handoff/` | Package session state as a structured brief for zero-warmup resumption |
 
 ### Productivity skills
 
@@ -39,6 +44,7 @@ npx skills@latest add gagangoswami/skills
 | `token-saver` | `skills/productivity/token-saver/` | Ultra-compressed communication mode |
 | `plan-with-me` | `skills/productivity/plan-with-me/` | Relentless interview to stress-test a plan |
 | `forge-skill` | `skills/productivity/forge-skill/` | Create new agent skills |
+| `idea-accelerator` | `skills/productivity/idea-accelerator/` | SCAMPER + inversion diverge→converge loop to generate and stress-test 10 idea variants |
 
 ### Issue tracker
 

@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# hooks/pre-commit
+#
+# Source-controlled copy of the pre-commit hook.
+# Install with: cp hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+# Or use: scripts/install-hooks.sh
+#
+# Regenerates dashboard.html whenever a SKILL.md is added or modified,
+# then stages the result so it lands in the same commit automatically.
+
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+GENERATOR="$REPO_ROOT/scripts/generate-dashboard.py"
+
+if git diff --cached --name-only | grep -qE 'SKILL\.md$'; then
+  echo "⚡ SKILL.md changed — regenerating dashboard.html …"
+  python3 "$GENERATOR"
+  git add "$REPO_ROOT/dashboard.html"
+  echo "✓ dashboard.html staged."
+fi

@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agent Skills Dashboard</title>
+  <style>
+    /* ── tokens ── */
+    :root {
+      --bg:          #faf9f7;
+      --surface:     #ffffff;
+      --surface-2:   #f5f3f0;
+      --border:      #e8e4de;
+      --border-2:    #d5d0c8;
+      --text:        #1a1814;
+      --text-muted:  #6b6560;
+      --text-subtle: #9b948c;
+      --accent:      #d97757;
+      --accent-2:    #bf5e3e;
+      --accent-bg:   #fdf2ee;
+      --eng-color:   #5b6af0;
+      --eng-bg:      #eef0fd;
+      --prod-color:  #2ea87e;
+      --prod-bg:     #e8f7f2;
+      --radius:      12px;
+      --radius-sm:   8px;
+      --shadow:      0 1px 4px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.04);
+      --shadow-hover:0 4px 12px rgba(0,0,0,.10), 0 12px 32px rgba(0,0,0,.06);
+      --font:        -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", system-ui, sans-serif;
+      --mono:        "JetBrains Mono", "Fira Code", "Cascadia Code", ui-monospace, monospace;
+      --transition:  0.2s ease;
+    }
+
+    /* ── reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── header ── */
+    .site-header {
+      background: var(--text);
+      color: #fff;
+      padding: 0 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 58px;
+      box-shadow: 0 1px 0 rgba(255,255,255,.1);
+    }
+    .site-logo {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: -.01em;
+      color: #fff;
+      text-decoration: none;
+    }
+    .logo-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--accent);
+      display: grid;
+      place-items: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+    .header-meta {
+      font-size: .78rem;
+      color: rgba(255,255,255,.45);
+    }
+
+    /* ── hero ── */
+    .hero {
+      padding: 3.5rem 2rem 2.5rem;
+      text-align: center;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      background: var(--accent-bg);
+      color: var(--accent-2);
+      border: 1px solid #f3d0c2;
+      border-radius: 999px;
+      font-size: .78rem;
+      font-weight: 600;
+      padding: .25rem .75rem;
+      margin-bottom: 1.25rem;
+      letter-spacing: .02em;
+    }
+    .hero h1 {
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 800;
+      letter-spacing: -.03em;
+      line-height: 1.15;
+      color: var(--text);
+      margin-bottom: .75rem;
+    }
+    .hero h1 span { color: var(--accent); }
+    .hero p {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      max-width: 500px;
+      margin: 0 auto 2rem;
+    }
+
+    /* ── stats row ── */
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+    }
+    .stat-pill {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: .4rem 1rem;
+      font-size: .85rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .stat-pill strong { color: var(--text); }
+
+    /* ── controls ── */
+    .controls {
+      max-width: 900px;
+      margin: 0 auto 2rem;
+      padding: 0 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .search-wrap {
+      position: relative;
+    }
+    .search-wrap svg {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-subtle);
+      pointer-events: none;
+    }
+    #search {
+      width: 100%;
+      padding: .7rem 1rem .7rem 2.75rem;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: .95rem;
+      font-family: var(--font);
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    #search:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(217,119,87,.15);
+    }
+    #search::placeholder { color: var(--text-subtle); }
+
+    .filter-tabs {
+      display: flex;
+      gap: .5rem;
+      flex-wrap: wrap;
+    }
+    .tab {
+      padding: .4rem 1rem;
+      border-radius: 999px;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      font-size: .85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition);
+      font-family: var(--font);
+    }
+    .tab:hover { border-color: var(--accent); color: var(--accent); }
+    .tab.active {
+      background: var(--text);
+      border-color: var(--text);
+      color: #fff;
+    }
+    .tab.active.eng { background: var(--eng-color); border-color: var(--eng-color); }
+    .tab.active.prod { background: var(--prod-color); border-color: var(--prod-color); }
+
+    /* ── grid ── */
+    .grid-wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 2rem 4rem;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--text-muted);
+      display: none;
+    }
+    .empty-state svg { opacity: .3; margin-bottom: .75rem; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.25rem;
+    }
+
+    /* ── card ── */
+    .card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: .85rem;
+      transition: box-shadow var(--transition), border-color var(--transition), transform var(--transition);
+      cursor: default;
+    }
+    .card:hover {
+      box-shadow: var(--shadow-hover);
+      border-color: var(--border-2);
+      transform: translateY(-2px);
+    }
+    .card.hidden { display: none; }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: .85rem;
+    }
+    .card-icon {
+      font-size: 1.6rem;
+      line-height: 1;
+      flex-shrink: 0;
+      width: 42px;
+      height: 42px;
+      background: var(--surface-2);
+      border-radius: var(--radius-sm);
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--border);
+    }
+    .card-title-group {
+      display: flex;
+      flex-direction: column;
+      gap: .25rem;
+    }
+    .card-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.25;
+      font-family: var(--mono);
+      letter-spacing: -.01em;
+    }
+    .cat-badge {
+      display: inline-block;
+      padding: .15rem .5rem;
+      border-radius: 4px;
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .cat-badge.engineering  { background: var(--eng-bg);  color: var(--eng-color);  }
+    .cat-badge.productivity { background: var(--prod-bg); color: var(--prod-color); }
+
+    .card-tagline {
+      font-size: .875rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    .trigger-tag {
+      background: var(--accent-bg);
+      border: 1px solid #f3d0c2;
+      border-radius: var(--radius-sm);
+      padding: .65rem .85rem;
+    }
+    .trigger-label {
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--accent-2);
+      display: block;
+      margin-bottom: .3rem;
+    }
+    .trigger-text {
+      font-size: .83rem;
+      color: #7a4030;
+      line-height: 1.5;
+    }
+
+    /* ── details / accordion ── */
+    .card-details { margin-top: auto; }
+    .card-summary {
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--text-subtle);
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: .35rem;
+      padding: .3rem 0;
+      user-select: none;
+      transition: color var(--transition);
+    }
+    .card-summary::-webkit-details-marker { display: none; }
+    .card-summary::before {
+      content: "▶";
+      font-size: .65rem;
+      transition: transform var(--transition);
+    }
+    details[open] .card-summary::before { transform: rotate(90deg); }
+    .card-summary:hover { color: var(--accent); }
+
+    .how-section {
+      margin-top: .85rem;
+      padding-top: .85rem;
+      border-top: 1px solid var(--border);
+    }
+    .how-label {
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      margin-bottom: .45rem;
+    }
+    .how-text {
+      font-size: .82rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .skill-link {
+      display: inline-block;
+      margin-top: .85rem;
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .skill-link:hover { text-decoration: underline; }
+
+    /* ── footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 1.5rem 2rem;
+      text-align: center;
+      color: var(--text-subtle);
+      font-size: .8rem;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── responsive ── */
+    @media (max-width: 600px) {
+      .hero { padding: 2rem 1rem 1.5rem; }
+      .controls, .grid-wrap { padding-left: 1rem; padding-right: 1rem; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── header ─────────────────────────────────────────────── -->
+<header class="site-header">
+  <a class="site-logo" href="#">
+    <span class="logo-dot">⚡</span>
+    Agent Skills
+  </a>
+  <span class="header-meta">Generated 2026-05-11 00:37 UTC</span>
+</header>
+
+<!-- ── hero ───────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-eyebrow">
+    <span>🧩</span> gagangoswami/skills
+  </div>
+  <h1>Agent <span>Skills</span> Dashboard</h1>
+  <p>All 28 reusable AI agent skills — find what you need fast, understand when and how to use each one.</p>
+  <div class="stats">
+    <span class="stat-pill"><strong>28</strong> total skills</span>
+    <span class="stat-pill"><strong>23</strong> engineering</span>
+    <span class="stat-pill"><strong>5</strong> productivity</span>
+  </div>
+</section>
+
+<!-- ── controls ────────────────────────────────────────────── -->
+<div class="controls">
+  <div class="search-wrap">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    <input id="search" type="search" placeholder="Search skills, descriptions, triggers…" autocomplete="off" />
+  </div>
+  <div class="filter-tabs">
+    <button class="tab active" data-filter="all">All (28)</button>
+    <button class="tab eng" data-filter="engineering">Engineering (23)</button>
+    <button class="tab prod" data-filter="productivity">Productivity (5)</button>
+  </div>
+</div>
+
+<!-- ── grid ────────────────────────────────────────────────── -->
+<div class="grid-wrap">
+  <div class="empty-state" id="emptyState">
+    <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    <p>No skills match your search.</p>
+  </div>
+  <div class="grid" id="grid">
+
+      <article class="card" data-name="ai-architecture" data-category="engineering">
+        <div class="card-header">
+          <span class="card-icon">🤖</span>
+          <div class="card-title-group">
+            <h3 class="card-name">ai-architecture</h3>
+            <span class="cat-badge engineering">engineering</span>
+          </div>
+        </div>
+        <p class="card-tagline">Design AI-native system architectures end-to-end: select AI patterns (RAG, agents, multi-agent, fine-tuning), choose models, plan memory strategy, design evaluation pipelines, and produce a complete architecture blueprint</p>
+        <div class="trigger-tag"><span class="trigger-label">When to use</span><p class="trigger-text">asked to architect an AI system, AI co-pilot, LLM-powered workflow, agent platform, or when choosing between AI patterns for a business problem</p></div>
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          <div class="how-section"><h4 class="how-label">How it works</h4><p class="how-text">Answer these before generating the architecture:
+
+1. Domain — what business process does this automate or augment?
+2. Users — humans in the loop, autonomous, or both?
+3. Latency — interactive (&lt;2s), near-real-time (&lt;30s), or batch?
+4. Data sensitivity — PII, regulated (HIPAA/GDPR), or public?
+…</p></div>
+          <a class="skill-link" href="skills/engineering/ai-architecture/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+      <article class="card" data-name="arch-audit" data-category="engineering">
+        <div class="card-header">
+          <span class="card-icon">🏛️</span>
+          <div class="card-title-group">
+            <h3 class="card-name">arch-audit</h3>
+            <span class="cat-badge engineering">engineering</span>
+          </div>
+        </div>
+        <p class="card-tagline">Find deepening opportunities in a codebase, informed by the domain language in CONTEXT.md and the decisions in docs/adr/</p>
+        <div class="trigger-tag"><span class="trigger-label">When to use</span><p class="trigger-text">the user wants to improve architecture, find refactoring opportunities, consolidate tightly-coupled modules, or make a codebase more testable and AI-navigable</p></div>
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          <div class="how-section"><h4 class="how-label">How it works</h4><p class="how-text">1. Explore
+
+Read the project's domain glossary and any ADRs in the area you're touching first.
+
+Then use the Agent tool with subagent_type=Explore to walk the codebase. Don't follow rigid heuristics — explore organically and note where you experience friction:
+
+- Where does understanding one concept…</p></div>
+          <a class="skill-link" href="skills/engineering/arch-audit/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+      <article class="card" data-name="architecture-lineage" data-category="engineering">
+        <div class="card-header">
+          <span class="card-icon">📜</span>
+          <div class="card-title-group">
+            <h3 class="card-name">architecture-lineage</h3>
+            <span class="cat-badge engineering">engineering</span>
+          </div>
+        </div>
+        <p class="card-tagline">Reconstruct why the system evolved the way it did by parsing ADRs, PR history, migration logs, and incident records</p>
+        <div class="trigger-tag"><span class="trigger-label">When to use</span><p class="trigger-text">asking &quot;why does X exist?&quot;, &quot;what broke last migration?&quot;, &quot;what is risky to change?&quot;, or &quot;how did the architecture get here?&quot;</p></div>
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          
+          <a class="skill-link" href="skills/engineering/architecture-lineage/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+      <article class="card" data-name="assumption-hunter" data-category="engineering">
+        <div class="card-header">
+          <span class="card-icon">🎯</span>
+          <div class="card-title-group">
+            <h3 class="card-name">assumption-hunter</h3>
+            <span class="cat-badge engineering">engineering</span>
+          </div>
+        </div>
+        <p class="card-tagline">Surface hidden assumptions in plans, designs, specs, and code before they become bugs, rework, or production incidents</p>
+        <div class="trigger-tag"><span class="trigger-label">When to use</span><p class="trigger-text">reviewing a plan, before starting implementation, when something &quot;obviously works&quot; but hasn't been verified, when the user says &quot;we assumed&quot;, &quot;of course X is true&quot;, or asks &quot;what am I missing&quot;</p></div>
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          <div class="how-section"><h4 class="how-label">How it works</h4><p class="how-text">Step 1 — Ingest the artifact
+
+Read the plan, spec, design doc, or code region the user provides. If none is provided, ask for the single most important artifact to analyze.
+
+ Step 2 — Hunt by category
+
+Scan across all four assumption categories from CATEGORIES.md. For each category, list every assum…</p></div>
+          <a class="skill-link" href="skills/engineering/assumption-hunter/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+      <article class="card" data-name="big-picture" data-category="engineering">
+        <div class="card-header">
+          <span class="card-icon">🗺️</span>
+          <div class="card-title-group">
+            <h3 class="card-name">big-picture</h3>
+            <span class="cat-badge engineering">engineering</span>
+          </div>
+        </div>
+        <p class="card-tagline">Tell the agent to step back and give broader context or a higher-level perspective on an unfamiliar area of code</p>
+        <div class="trigger-tag"><span class="trigger-label">When to use</span><p class="trigger-text">you need a map of relevant modules and callers, or want to understand how a section fits into the bigger picture</p></div>
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          
+          <a class="skill-link" href="skills/engineering/big-picture/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+      <article class="card" data-name="debug" data-category="engineering">
+        <div class="card-header">
+          <span class="card-icon">🐛</span>
+          <div class="card-title-group">
+            <h3 class="card-name">debug</h3>
+            <span class="cat-badge engineering">engineering</span>
+          </div>
+        </div>
+        <p class="card-tagline">Disciplined diagnosis loop for hard bugs and performance regressions. Reproduce → minimise → hypothesise → instrument → fix → regression-test</p>
+        <div class="trigger-tag"><span class="trigger-label">When to use</span><p class="trigger-text">user says &quot;debug this&quot;, &quot;diagnose this&quot;, reports a bug, says something is broken/throwing/failing, or describes a performance regression</p></div>
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          
+          <a class="skill-link" href="skills/engineering/debug/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+      <article class="card" data-name="decision-cascade" data-category="engineering">
+        <div class="card-header">
+          <span class="card-icon">🌊</span>
+          <div class="card-title-group">
+            <h3 class="card-name">decision-cascade</h3>
+            <span class="cat-badge engineering">engineering</span>
+          </div>
+        </div>
+        <p class="card-tagline">Map 2nd and 3rd order consequences of a decision before committing. Surface the hidden costs, forced follow-on decisions, and risks that a choice unlocks downstream</p>
+        <div class="trigger-tag"><span class="trigger-label">When to use</span><p class="trigger-text">evaluating an architectural choice, technology selection, or major process change — especially when the user says &quot;let's go with X&quot;, &quot;we've decided on Y&quot;, or asks &quot;what are the implications of choosing Z&quot;</p></div>
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          <div class="how-section"><h4 class="how-label">How it works</h4><p class="how-text">Step 1 — State the decision
+
+Capture the decision precisely:
+
+&gt; &quot;Decision: [WHAT] — choosing [OPTION A] over [OPTION B and C]&quot;
+
+Also capture: who makes this decision, when it must be made, and what it's reversible at (can it be undone? at what cost?).
+
+Reversibility score: Rate 1–5 (1 =…</p></div>
+          <a class="skill-link" href="skills/engineering/decision-cascade/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+      <article class="card" data-name="first-principles" data-category="engineering">
+        <div class="card-header">
+          <span class="card-icon">⚛️</span>
+          <div class="card-title-group">
+            <h3 class="card-name">first-principles</h3>
+            <span class="cat-badge engineering">engineering</span>
+          </div>
+        </div>
+        <p class="card-tagline">Deconstruct any problem, design, or plan to its irreducible truths, then rebuild the solution from scratch. Prevents anchoring bias and inherited constraints</p>
+        <div class="trigger-tag"><span class="trigger-label">When to use</span><p class="trigger-text">the user says &quot;we've always done it this way&quot;, &quot;why does X have to be like this&quot;, &quot;is there a fundamentally better way&quot;, &quot;challenge my assumptions&quot;, &quot;first principles&quot;, or when a plan feels like it's optimizing around an avoidable constraint</p></div>
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          <div class="how-section"><h4 class="how-label">How it works</h4><p class="how-text">Step 1 — State the problem without the solution
+
+Restate the problem the user is actually trying to solve, stripped of any reference to their current approach.
+
+&gt; Wrong: &quot;How do we make our monolith scale better?&quot;
+&gt; Right: &quot;How do we serve 10× current load with acceptable latenc…</p></div>
+          <a class="skill-link" href="skills/engineering/first-principles/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+      <article class="card" data-name="init-skills" data-category="engineering">
+        <div class="card-header">
+          <span class="card-icon">🚀</span>
+          <div class="card-title-group">
+            <h3 class="card-name">init-skills</h3>
+            <span class="cat-badge engineering">engineering</span>
+          </div>
+        </div>
+        <p class="card-tagline">Sets up an `## Agent skills` block in AGENTS.md/CLAUDE.md and `docs/agents/` so the engineering skills know this repo's issue tracker (GitHub or local markdown), triage label vocabulary, and domain doc layout. Run before first use of `to-tasks`, `to-prd`, `triage`, `debug`, `tdd`, `arch-audit`, or `big-picture` — or if those skills appear to be missing context about the issue tracker, triage labels, or domain docs.</p>
+        
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          <div class="how-section"><h4 class="how-label">How it works</h4><p class="how-text">1. Explore
+
+Look at the current repo to understand its starting state. Read whatever exists; don't assume:
+
+- git remote -v and .git/config — is this a GitHub repo? Which one?
+- AGENTS.md and CLAUDE.md at the repo root — does either exist? Is there already an  Agent skills section in either?
+- CONTE…</p></div>
+          <a class="skill-link" href="skills/engineering/init-skills/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+      <article class="card" data-name="knowledge-spike" data-category="engineering">
+        <div class="card-header">
+          <span class="card-icon">⚡</span>
+          <div class="card-title-group">
+            <h3 class="card-name">knowledge-spike</h3>
+            <span class="cat-badge engineering">engineering</span>
+          </div>
+        </div>
+        <p class="card-tagline">Run a structured 30-minute learning sprint on any technology, RFC, pattern, or concept. Produces a reusable TIL card with key concepts, stack-fit analysis, gotchas, and 3 things to watch</p>
+        <div class="trigger-tag"><span class="trigger-label">When to use</span><p class="trigger-text">the user says &quot;explain X to me&quot;, &quot;I need to understand Y&quot;, &quot;what is Z and should I use it&quot;, &quot;spike on this&quot;, or needs to evaluate a technology for a real decision — not just general curiosity</p></div>
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          <div class="how-section"><h4 class="how-label">How it works</h4><p class="how-text">Step 1 — Anchor the learning goal
+
+Before exploring, ask: &quot;What decision will this knowledge enable?&quot;
+
+| Decision type | Learning focus |
+|---|---|
+| Should we adopt X? | Tradeoffs, maturity, lock-in, alternatives |
+| How do we implement X? | Core concepts, APIs, failure modes |
+| Why is X…</p></div>
+          <a class="skill-link" href="skills/engineering/knowledge-spike/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+      <article class="card" data-name="multi-agent-orchestrator" data-category="engineering">
+        <div class="card-header">
+          <span class="card-icon">🕸️</span>
+          <div class="card-title-group">
+            <h3 class="card-name">multi-agent-orchestrator</h3>
+            <span class="cat-badge engineering">engineering</span>
+          </div>
+        </div>
+        <p class="card-tagline">Decompose large cross-cutting changes into a DAG of parallel subagent tasks in isolated git worktrees with conflict resolution, recovery, and merge validation</p>
+        <div class="trigger-tag"><span class="trigger-label">When to use</span><p class="trigger-text">a change spans 3+ bounded contexts, touches 10+ files, requires an agent swarm, or sequential execution is too slow</p></div>
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          <div class="how-section"><h4 class="how-label">How it works</h4><p class="how-text">1. Agent registry
+
+Declare specialised agents for the run:
+
+ 2. Decompose into DAG
+
+Read the plan. Build a dependency graph — tasks sharing no edited files run in parallel; dependent tasks run sequentially within a lane.
+
+Conflict check: list every file each task will touch. Any file appearing in 2+…</p></div>
+          <a class="skill-link" href="skills/engineering/multi-agent-orchestrator/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+      <article class="card" data-name="plan-and-build-with-me" data-category="engineering">
+        <div class="card-header">
+          <span class="card-icon">👩‍💻</span>
+          <div class="card-title-group">
+            <h3 class="card-name">plan-and-build-with-me</h3>
+            <span class="cat-badge engineering">engineering</span>
+          </div>
+        </div>
+        <p class="card-tagline">Step-by-step guided build-and-learn sessions as a pair programmer and teacher. Explains concepts then executes them incrementally</p>
+        <div class="trigger-tag"><span class="trigger-label">When to use</span><p class="trigger-text">user wants to learn and build something together — e.g. &quot;teach me X&quot;, &quot;build X with me&quot;, &quot;walk me through building X&quot;, &quot;I want to learn Y&quot;, &quot;pair with me on Z&quot;, or names a topic like &quot;Agentic AI&quot;, &quot;React animations&quot;, or any open-source library</p></div>
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          
+          <a class="skill-link" href="skills/engineering/plan-and-build-with-me/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+      <article class="card" data-name="plan-with-me-with-docs" data-category="engineering">
+        <div class="card-header">
+          <span class="card-icon">📝</span>
+          <div class="card-title-group">
+            <h3 class="card-name">plan-with-me-with-docs</h3>
+            <span class="cat-badge engineering">engineering</span>
+          </div>
+        </div>
+        <p class="card-tagline">Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates documentation (CONTEXT.md, ADRs) inline as decisions crystallise</p>
+        <div class="trigger-tag"><span class="trigger-label">When to use</span><p class="trigger-text">user wants to stress-test a plan against their project's language and documented decisions</p></div>
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          
+          <a class="skill-link" href="skills/engineering/plan-with-me-with-docs/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+      <article class="card" data-name="prompt-coach" data-category="engineering">
+        <div class="card-header">
+          <span class="card-icon">🎓</span>
+          <div class="card-title-group">
+            <h3 class="card-name">prompt-coach</h3>
+            <span class="cat-badge engineering">engineering</span>
+          </div>
+        </div>
+        <p class="card-tagline">Score prompt quality on clarity, specificity, actionability, and scope. Surface targeted improvements before low-quality prompts cause clarification round-trips</p>
+        <div class="trigger-tag"><span class="trigger-label">When to use</span><p class="trigger-text">the user asks &quot;is my prompt good?&quot;, &quot;how can I improve this?&quot;, or auto-trigger when a prompt scores below 6/10 and is likely to cause agent confusion</p></div>
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          
+          <a class="skill-link" href="skills/engineering/prompt-coach/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+      <article class="card" data-name="repo-intelligence" data-category="engineering">
+        <div class="card-header">
+          <span class="card-icon">🔍</span>
+          <div class="card-title-group">
+            <h3 class="card-name">repo-intelligence</h3>
+            <span class="cat-badge engineering">engineering</span>
+          </div>
+        </div>
+        <p class="card-tagline">Build executable repository cognition: service graphs, API detection, event flow analysis, dependency mapping, and architecture summaries</p>
+        <div class="trigger-tag"><span class="trigger-label">When to use</span><p class="trigger-text">analyzing architecture, planning cross-service changes, tracing dependencies, generating PR context, or debugging incidents across services</p></div>
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          
+          <a class="skill-link" href="skills/engineering/repo-intelligence/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+      <article class="card" data-name="semantic-memory" data-category="engineering">
+        <div class="card-header">
+          <span class="card-icon">🧠</span>
+          <div class="card-title-group">
+            <h3 class="card-name">semantic-memory</h3>
+            <span class="cat-badge engineering">engineering</span>
+          </div>
+        </div>
+        <p class="card-tagline">Generate and retrieve compressed, layered semantic summaries of a codebase so agents get task-relevant context without loading the full repo</p>
+        <div class="trigger-tag"><span class="trigger-label">When to use</span><p class="trigger-text">compressing a large codebase for agent consumption, retrieving relevant service context for a task, or building persistent memory across sessions</p></div>
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          
+          <a class="skill-link" href="skills/engineering/semantic-memory/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+      <article class="card" data-name="session-handoff" data-category="engineering">
+        <div class="card-header">
+          <span class="card-icon">🤝</span>
+          <div class="card-title-group">
+            <h3 class="card-name">session-handoff</h3>
+            <span class="cat-badge engineering">engineering</span>
+          </div>
+        </div>
+        <p class="card-tagline">Package the current session state as a structured handoff brief — decisions made with reasoning, files touched, open questions, blockers, and concrete next steps. Use at the end of a work session, before switching context, when handing off to another agent or teammate, or when the user says "wrap up", "summarize what we did", "create a handoff", "I need to stop here", or "pick this up later".</p>
+        
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          <div class="how-section"><h4 class="how-label">How it works</h4><p class="how-text">Step 1 — Reconstruct the session
+
+Review the conversation history. Extract:
+
+1. What was the goal? — The original intent the user arrived with
+2. What did we actually do? — The work that happened, in order
+3. What changed? — Files created, modified, or deleted
+4. What decisions were made? — Every si…</p></div>
+          <a class="skill-link" href="skills/engineering/session-handoff/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+      <article class="card" data-name="skill-factory" data-category="engineering">
+        <div class="card-header">
+          <span class="card-icon">🏭</span>
+          <div class="card-title-group">
+            <h3 class="card-name">skill-factory</h3>
+            <span class="cat-badge engineering">engineering</span>
+          </div>
+        </div>
+        <p class="card-tagline">Analyze a session for repeated patterns, frequent corrections, and re-explained context. Synthesize reusable SKILL.md files that permanently encode the pattern</p>
+        <div class="trigger-tag"><span class="trigger-label">When to use</span><p class="trigger-text">the user says &quot;save this pattern&quot;, &quot;we keep doing this&quot;, &quot;turn this into a skill&quot;, or at the end of a session with notable repeated workflows or corrections</p></div>
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          
+          <a class="skill-link" href="skills/engineering/skill-factory/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+      <article class="card" data-name="tdd" data-category="engineering">
+        <div class="card-header">
+          <span class="card-icon">🧪</span>
+          <div class="card-title-group">
+            <h3 class="card-name">tdd</h3>
+            <span class="cat-badge engineering">engineering</span>
+          </div>
+        </div>
+        <p class="card-tagline">Test-driven development with red-green-refactor loop</p>
+        <div class="trigger-tag"><span class="trigger-label">When to use</span><p class="trigger-text">user wants to build features or fix bugs using TDD, mentions &quot;red-green-refactor&quot;, wants integration tests, or asks for test-first development</p></div>
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          <div class="how-section"><h4 class="how-label">How it works</h4><p class="how-text">1. Planning
+
+When exploring the codebase, use the project's domain glossary so that test names and interface vocabulary match the project's language, and respect ADRs in the area you're touching.
+
+Before writing any code:
+
+- [ ] Confirm with user what interface changes are needed
+- [ ] Confirm with …</p></div>
+          <a class="skill-link" href="skills/engineering/tdd/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+      <article class="card" data-name="to-prd" data-category="engineering">
+        <div class="card-header">
+          <span class="card-icon">📋</span>
+          <div class="card-title-group">
+            <h3 class="card-name">to-prd</h3>
+            <span class="cat-badge engineering">engineering</span>
+          </div>
+        </div>
+        <p class="card-tagline">Turn the current conversation context into a PRD and publish it to the project issue tracker</p>
+        <div class="trigger-tag"><span class="trigger-label">When to use</span><p class="trigger-text">user wants to create a PRD from the current context</p></div>
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          <div class="how-section"><h4 class="how-label">How it works</h4><p class="how-text">1. Explore the repo to understand the current state of the codebase, if you haven't already. Use the project's domain glossary vocabulary throughout the PRD, and respect any ADRs in the area you're touching.
+
+2. Sketch out the major modules you will need to build or modify to complete the implementa…</p></div>
+          <a class="skill-link" href="skills/engineering/to-prd/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+      <article class="card" data-name="to-tasks" data-category="engineering">
+        <div class="card-header">
+          <span class="card-icon">✅</span>
+          <div class="card-title-group">
+            <h3 class="card-name">to-tasks</h3>
+            <span class="cat-badge engineering">engineering</span>
+          </div>
+        </div>
+        <p class="card-tagline">Break a plan, spec, or PRD into independently-grabbable issues on the project issue tracker using tracer-bullet vertical slices</p>
+        <div class="trigger-tag"><span class="trigger-label">When to use</span><p class="trigger-text">user wants to convert a plan into issues, create implementation tickets, or break down work into issues</p></div>
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          <div class="how-section"><h4 class="how-label">How it works</h4><p class="how-text">1. Gather context
+
+Work from whatever is already in the conversation context. If the user passes an issue reference (issue number, URL, or path) as an argument, fetch it from the issue tracker and read its full body and comments.
+
+ 2. Explore the codebase (optional)
+
+If you have not already explored…</p></div>
+          <a class="skill-link" href="skills/engineering/to-tasks/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+      <article class="card" data-name="triage" data-category="engineering">
+        <div class="card-header">
+          <span class="card-icon">🚦</span>
+          <div class="card-title-group">
+            <h3 class="card-name">triage</h3>
+            <span class="cat-badge engineering">engineering</span>
+          </div>
+        </div>
+        <p class="card-tagline">Triage issues through a state machine driven by triage roles</p>
+        <div class="trigger-tag"><span class="trigger-label">When to use</span><p class="trigger-text">user wants to create an issue, triage issues, review incoming bugs or feature requests, prepare issues for an AFK agent, or manage issue workflow</p></div>
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          
+          <a class="skill-link" href="skills/engineering/triage/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+      <article class="card" data-name="vuln-scanner" data-category="engineering">
+        <div class="card-header">
+          <span class="card-icon">🛡️</span>
+          <div class="card-title-group">
+            <h3 class="card-name">vuln-scanner</h3>
+            <span class="cat-badge engineering">engineering</span>
+          </div>
+        </div>
+        <p class="card-tagline">Autonomous vulnerability scanning skill inspired by Anthropic Mythos methodology. Activates when the user asks to: scan for security vulnerabilities, audit the repo for CVEs, find exploitable code paths, perform threat modeling, run static analysis, detect OWASP Top 10 issues, check for injection/auth/crypto flaws, or generate proof-of-concept exploits for found vulnerabilities. NOT for general code review or linting. Use for security-specific analysis workflows on any language or framework.</p>
+        
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          
+          <a class="skill-link" href="skills/engineering/vuln-scanner/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+      <article class="card" data-name="forge-skill" data-category="productivity">
+        <div class="card-header">
+          <span class="card-icon">⚒️</span>
+          <div class="card-title-group">
+            <h3 class="card-name">forge-skill</h3>
+            <span class="cat-badge productivity">productivity</span>
+          </div>
+        </div>
+        <p class="card-tagline">Create new agent skills with proper structure, progressive disclosure, and bundled resources</p>
+        <div class="trigger-tag"><span class="trigger-label">When to use</span><p class="trigger-text">user wants to create, write, or build a new skill</p></div>
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          <div class="how-section"><h4 class="how-label">How it works</h4><p class="how-text">1. Gather requirements — ask user about:
+   - What task/domain does the skill cover?
+   - What specific use cases should it handle?
+   - Does it need executable scripts or just instructions?
+   - Any reference materials to include?
+
+2. Draft the skill — create:
+   - SKILL.md with concise instruction…</p></div>
+          <a class="skill-link" href="skills/productivity/forge-skill/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+      <article class="card" data-name="idea-accelerator" data-category="productivity">
+        <div class="card-header">
+          <span class="card-icon">💡</span>
+          <div class="card-title-group">
+            <h3 class="card-name">idea-accelerator</h3>
+            <span class="cat-badge productivity">productivity</span>
+          </div>
+        </div>
+        <p class="card-tagline">Rapid idea generation engine. Apply SCAMPER, inversion, forced analogy, and random entry in a structured diverge→converge loop</p>
+        <div class="trigger-tag"><span class="trigger-label">When to use</span><p class="trigger-text">the user has a seed idea and wants to expand it, says &quot;give me variations&quot;, &quot;brainstorm&quot;, &quot;I need ideas for X&quot;, &quot;what else could this be&quot;, or is stuck in a local maximum and wants a creative reset</p></div>
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          <div class="how-section"><h4 class="how-label">How it works</h4><p class="how-text">Phase 1 — Anchor (60 seconds)
+
+State the seed idea back as a single sentence:
+
+&gt; &quot;The core idea is: [X] — a [what] that helps [who] do [outcome].&quot;
+
+If the user's idea is vague, ask ONE clarifying question — the most load-bearing one only — then proceed.
+
+ Phase 2 — Diverge (main loop)
+
+…</p></div>
+          <a class="skill-link" href="skills/productivity/idea-accelerator/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+      <article class="card" data-name="plan-with-me" data-category="productivity">
+        <div class="card-header">
+          <span class="card-icon">🧭</span>
+          <div class="card-title-group">
+            <h3 class="card-name">plan-with-me</h3>
+            <span class="cat-badge productivity">productivity</span>
+          </div>
+        </div>
+        <p class="card-tagline">Interview the user relentlessly about a plan or design until reaching shared understanding, resolving each branch of the decision tree</p>
+        <div class="trigger-tag"><span class="trigger-label">When to use</span><p class="trigger-text">user wants to stress-test a plan, think through a design, or says &quot;plan with me&quot;, &quot;grill me&quot;, or &quot;walk me through this&quot;</p></div>
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          
+          <a class="skill-link" href="skills/productivity/plan-with-me/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+      <article class="card" data-name="token-saver" data-category="productivity">
+        <div class="card-header">
+          <span class="card-icon">💾</span>
+          <div class="card-title-group">
+            <h3 class="card-name">token-saver</h3>
+            <span class="cat-badge productivity">productivity</span>
+          </div>
+        </div>
+        <p class="card-tagline">Ultra-compressed communication mode. Cuts token usage ~75% by dropping filler, articles, and pleasantries while keeping full technical accuracy</p>
+        <div class="trigger-tag"><span class="trigger-label">When to use</span><p class="trigger-text">user says &quot;token-saver&quot;, &quot;caveman mode&quot;, &quot;less tokens&quot;, &quot;be brief&quot;, &quot;compress&quot;, or invokes /token-saver</p></div>
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          
+          <a class="skill-link" href="skills/productivity/token-saver/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+      <article class="card" data-name="upgrade-agent-pack" data-category="productivity">
+        <div class="card-header">
+          <span class="card-icon">🔄</span>
+          <div class="card-title-group">
+            <h3 class="card-name">upgrade-agent-pack</h3>
+            <span class="cat-badge productivity">productivity</span>
+          </div>
+        </div>
+        <p class="card-tagline">Upgrade agents, skills, prompts, instructions, and hooks to match latest cross-platform frontmatter schemas and best practices</p>
+        
+        <details class="card-details">
+          <summary class="card-summary">More details</summary>
+          
+          <a class="skill-link" href="skills/productivity/upgrade-agent-pack/SKILL.md" target="_blank">Open SKILL.md →</a>
+        </details>
+      </article>
+
+  </div>
+</div>
+
+<!-- ── footer ──────────────────────────────────────────────── -->
+<footer>
+  Auto-generated by <code>scripts/generate-dashboard.py</code> &nbsp;·&nbsp;
+  <a href="https://github.com/GaganGoswami/skills" target="_blank">GaganGoswami/skills</a>
+  &nbsp;·&nbsp; 2026-05-11 00:37 UTC
+</footer>
+
+<!-- ── search + filter JS ──────────────────────────────────── -->
+<script>
+  const SKILLS = [{"name": "ai-architecture", "slug": "ai-architecture", "category": "engineering", "description": "Design AI-native system architectures end-to-end: select AI patterns (RAG, agents, multi-agent, fine-tuning), choose models, plan memory strategy, design evaluation pipelines, and produce a complete architecture blueprint. Use when asked to architect an AI system, AI co-pilot, LLM-powered workflow, agent platform, or when choosing between AI patterns for a business problem.", "when_to_use": "asked to architect an AI system, AI co-pilot, LLM-powered workflow, agent platform, or when choosing between AI patterns for a business problem"}, {"name": "arch-audit", "slug": "arch-audit", "category": "engineering", "description": "Find deepening opportunities in a codebase, informed by the domain language in CONTEXT.md and the decisions in docs/adr/. Use when the user wants to improve architecture, find refactoring opportunities, consolidate tightly-coupled modules, or make a codebase more testable and AI-navigable.", "when_to_use": "the user wants to improve architecture, find refactoring opportunities, consolidate tightly-coupled modules, or make a codebase more testable and AI-navigable"}, {"name": "architecture-lineage", "slug": "architecture-lineage", "category": "engineering", "description": "Reconstruct why the system evolved the way it did by parsing ADRs, PR history, migration logs, and incident records. Use when asking \"why does X exist?\", \"what broke last migration?\", \"what is risky to change?\", or \"how did the architecture get here?\".", "when_to_use": "asking \"why does X exist?\", \"what broke last migration?\", \"what is risky to change?\", or \"how did the architecture get here?\""}, {"name": "assumption-hunter", "slug": "assumption-hunter", "category": "engineering", "description": "Surface hidden assumptions in plans, designs, specs, and code before they become bugs, rework, or production incidents. Use when reviewing a plan, before starting implementation, when something \"obviously works\" but hasn't been verified, when the user says \"we assumed\", \"of course X is true\", or asks \"what am I missing\".", "when_to_use": "reviewing a plan, before starting implementation, when something \"obviously works\" but hasn't been verified, when the user says \"we assumed\", \"of course X is true\", or asks \"what am I missing\""}, {"name": "big-picture", "slug": "big-picture", "category": "engineering", "description": "Tell the agent to step back and give broader context or a higher-level perspective on an unfamiliar area of code. Use when you need a map of relevant modules and callers, or want to understand how a section fits into the bigger picture.", "when_to_use": "you need a map of relevant modules and callers, or want to understand how a section fits into the bigger picture"}, {"name": "debug", "slug": "debug", "category": "engineering", "description": "Disciplined diagnosis loop for hard bugs and performance regressions. Reproduce → minimise → hypothesise → instrument → fix → regression-test. Use when user says \"debug this\", \"diagnose this\", reports a bug, says something is broken/throwing/failing, or describes a performance regression.", "when_to_use": "user says \"debug this\", \"diagnose this\", reports a bug, says something is broken/throwing/failing, or describes a performance regression"}, {"name": "decision-cascade", "slug": "decision-cascade", "category": "engineering", "description": "Map 2nd and 3rd order consequences of a decision before committing. Surface the hidden costs, forced follow-on decisions, and risks that a choice unlocks downstream. Use when evaluating an architectural choice, technology selection, or major process change — especially when the user says \"let's go with X\", \"we've decided on Y\", or asks \"what are the implications of choosing Z\".", "when_to_use": "evaluating an architectural choice, technology selection, or major process change — especially when the user says \"let's go with X\", \"we've decided on Y\", or asks \"what are the implications of choosing Z\""}, {"name": "first-principles", "slug": "first-principles", "category": "engineering", "description": "Deconstruct any problem, design, or plan to its irreducible truths, then rebuild the solution from scratch. Prevents anchoring bias and inherited constraints. Use when the user says \"we've always done it this way\", \"why does X have to be like this\", \"is there a fundamentally better way\", \"challenge my assumptions\", \"first principles\", or when a plan feels like it's optimizing around an avoidable constraint.", "when_to_use": "the user says \"we've always done it this way\", \"why does X have to be like this\", \"is there a fundamentally better way\", \"challenge my assumptions\", \"first principles\", or when a plan feels like it's optimizing around an avoidable constraint"}, {"name": "init-skills", "slug": "init-skills", "category": "engineering", "description": "Sets up an `## Agent skills` block in AGENTS.md/CLAUDE.md and `docs/agents/` so the engineering skills know this repo's issue tracker (GitHub or local markdown), triage label vocabulary, and domain doc layout. Run before first use of `to-tasks`, `to-prd`, `triage`, `debug`, `tdd`, `arch-audit`, or `big-picture` — or if those skills appear to be missing context about the issue tracker, triage labels, or domain docs.", "when_to_use": ""}, {"name": "knowledge-spike", "slug": "knowledge-spike", "category": "engineering", "description": "Run a structured 30-minute learning sprint on any technology, RFC, pattern, or concept. Produces a reusable TIL card with key concepts, stack-fit analysis, gotchas, and 3 things to watch. Use when the user says \"explain X to me\", \"I need to understand Y\", \"what is Z and should I use it\", \"spike on this\", or needs to evaluate a technology for a real decision — not just general curiosity.", "when_to_use": "the user says \"explain X to me\", \"I need to understand Y\", \"what is Z and should I use it\", \"spike on this\", or needs to evaluate a technology for a real decision — not just general curiosity"}, {"name": "multi-agent-orchestrator", "slug": "multi-agent-orchestrator", "category": "engineering", "description": "Decompose large cross-cutting changes into a DAG of parallel subagent tasks in isolated git worktrees with conflict resolution, recovery, and merge validation. Use when a change spans 3+ bounded contexts, touches 10+ files, requires an agent swarm, or sequential execution is too slow.", "when_to_use": "a change spans 3+ bounded contexts, touches 10+ files, requires an agent swarm, or sequential execution is too slow"}, {"name": "plan-and-build-with-me", "slug": "plan-and-build-with-me", "category": "engineering", "description": "Step-by-step guided build-and-learn sessions as a pair programmer and teacher. Explains concepts then executes them incrementally. Use when user wants to learn and build something together — e.g. \"teach me X\", \"build X with me\", \"walk me through building X\", \"I want to learn Y\", \"pair with me on Z\", or names a topic like \"Agentic AI\", \"React animations\", or any open-source library.", "when_to_use": "user wants to learn and build something together — e.g. \"teach me X\", \"build X with me\", \"walk me through building X\", \"I want to learn Y\", \"pair with me on Z\", or names a topic like \"Agentic AI\", \"React animations\", or any open-source library"}, {"name": "plan-with-me-with-docs", "slug": "plan-with-me-with-docs", "category": "engineering", "description": "Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates documentation (CONTEXT.md, ADRs) inline as decisions crystallise. Use when user wants to stress-test a plan against their project's language and documented decisions.", "when_to_use": "user wants to stress-test a plan against their project's language and documented decisions"}, {"name": "prompt-coach", "slug": "prompt-coach", "category": "engineering", "description": "Score prompt quality on clarity, specificity, actionability, and scope. Surface targeted improvements before low-quality prompts cause clarification round-trips. Use when the user asks \"is my prompt good?\", \"how can I improve this?\", or auto-trigger when a prompt scores below 6/10 and is likely to cause agent confusion.", "when_to_use": "the user asks \"is my prompt good?\", \"how can I improve this?\", or auto-trigger when a prompt scores below 6/10 and is likely to cause agent confusion"}, {"name": "repo-intelligence", "slug": "repo-intelligence", "category": "engineering", "description": "Build executable repository cognition: service graphs, API detection, event flow analysis, dependency mapping, and architecture summaries. Use when analyzing architecture, planning cross-service changes, tracing dependencies, generating PR context, or debugging incidents across services.", "when_to_use": "analyzing architecture, planning cross-service changes, tracing dependencies, generating PR context, or debugging incidents across services"}, {"name": "semantic-memory", "slug": "semantic-memory", "category": "engineering", "description": "Generate and retrieve compressed, layered semantic summaries of a codebase so agents get task-relevant context without loading the full repo. Use when compressing a large codebase for agent consumption, retrieving relevant service context for a task, or building persistent memory across sessions.", "when_to_use": "compressing a large codebase for agent consumption, retrieving relevant service context for a task, or building persistent memory across sessions"}, {"name": "session-handoff", "slug": "session-handoff", "category": "engineering", "description": "Package the current session state as a structured handoff brief — decisions made with reasoning, files touched, open questions, blockers, and concrete next steps. Use at the end of a work session, before switching context, when handing off to another agent or teammate, or when the user says \"wrap up\", \"summarize what we did\", \"create a handoff\", \"I need to stop here\", or \"pick this up later\".", "when_to_use": ""}, {"name": "skill-factory", "slug": "skill-factory", "category": "engineering", "description": "Analyze a session for repeated patterns, frequent corrections, and re-explained context. Synthesize reusable SKILL.md files that permanently encode the pattern. Use when the user says \"save this pattern\", \"we keep doing this\", \"turn this into a skill\", or at the end of a session with notable repeated workflows or corrections.", "when_to_use": "the user says \"save this pattern\", \"we keep doing this\", \"turn this into a skill\", or at the end of a session with notable repeated workflows or corrections"}, {"name": "tdd", "slug": "tdd", "category": "engineering", "description": "Test-driven development with red-green-refactor loop. Use when user wants to build features or fix bugs using TDD, mentions \"red-green-refactor\", wants integration tests, or asks for test-first development.", "when_to_use": "user wants to build features or fix bugs using TDD, mentions \"red-green-refactor\", wants integration tests, or asks for test-first development"}, {"name": "to-prd", "slug": "to-prd", "category": "engineering", "description": "Turn the current conversation context into a PRD and publish it to the project issue tracker. Use when user wants to create a PRD from the current context.", "when_to_use": "user wants to create a PRD from the current context"}, {"name": "to-tasks", "slug": "to-tasks", "category": "engineering", "description": "Break a plan, spec, or PRD into independently-grabbable issues on the project issue tracker using tracer-bullet vertical slices. Use when user wants to convert a plan into issues, create implementation tickets, or break down work into issues.", "when_to_use": "user wants to convert a plan into issues, create implementation tickets, or break down work into issues"}, {"name": "triage", "slug": "triage", "category": "engineering", "description": "Triage issues through a state machine driven by triage roles. Use when user wants to create an issue, triage issues, review incoming bugs or feature requests, prepare issues for an AFK agent, or manage issue workflow.", "when_to_use": "user wants to create an issue, triage issues, review incoming bugs or feature requests, prepare issues for an AFK agent, or manage issue workflow"}, {"name": "vuln-scanner", "slug": "vuln-scanner", "category": "engineering", "description": "Autonomous vulnerability scanning skill inspired by Anthropic Mythos methodology. Activates when the user asks to: scan for security vulnerabilities, audit the repo for CVEs, find exploitable code paths, perform threat modeling, run static analysis, detect OWASP Top 10 issues, check for injection/auth/crypto flaws, or generate proof-of-concept exploits for found vulnerabilities. NOT for general code review or linting. Use for security-specific analysis workflows on any language or framework.", "when_to_use": ""}, {"name": "forge-skill", "slug": "forge-skill", "category": "productivity", "description": "Create new agent skills with proper structure, progressive disclosure, and bundled resources. Use when user wants to create, write, or build a new skill.", "when_to_use": "user wants to create, write, or build a new skill"}, {"name": "idea-accelerator", "slug": "idea-accelerator", "category": "productivity", "description": "Rapid idea generation engine. Apply SCAMPER, inversion, forced analogy, and random entry in a structured diverge→converge loop. Use when the user has a seed idea and wants to expand it, says \"give me variations\", \"brainstorm\", \"I need ideas for X\", \"what else could this be\", or is stuck in a local maximum and wants a creative reset.", "when_to_use": "the user has a seed idea and wants to expand it, says \"give me variations\", \"brainstorm\", \"I need ideas for X\", \"what else could this be\", or is stuck in a local maximum and wants a creative reset"}, {"name": "plan-with-me", "slug": "plan-with-me", "category": "productivity", "description": "Interview the user relentlessly about a plan or design until reaching shared understanding, resolving each branch of the decision tree. Use when user wants to stress-test a plan, think through a design, or says \"plan with me\", \"grill me\", or \"walk me through this\".", "when_to_use": "user wants to stress-test a plan, think through a design, or says \"plan with me\", \"grill me\", or \"walk me through this\""}, {"name": "token-saver", "slug": "token-saver", "category": "productivity", "description": "Ultra-compressed communication mode. Cuts token usage ~75% by dropping filler, articles, and pleasantries while keeping full technical accuracy. Use when user says \"token-saver\", \"caveman mode\", \"less tokens\", \"be brief\", \"compress\", or invokes /token-saver.", "when_to_use": "user says \"token-saver\", \"caveman mode\", \"less tokens\", \"be brief\", \"compress\", or invokes /token-saver"}, {"name": "upgrade-agent-pack", "slug": "upgrade-agent-pack", "category": "productivity", "description": "Upgrade agents, skills, prompts, instructions, and hooks to match latest cross-platform frontmatter schemas and best practices. Use when: migrating existing agent/skill files to current spec, fixing stale frontmatter fields, adding missing prompt.md / instructions.md / hooks.md modules, auditing cross-platform portability (GitHub Copilot, Claude Code, Codex, Kiro), or aligning file layout with the canonical agent-pack structure.", "when_to_use": ""}];
+
+  const searchEl  = document.getElementById('search');
+  const gridEl    = document.getElementById('grid');
+  const emptyEl   = document.getElementById('emptyState');
+  const cards     = Array.from(gridEl.querySelectorAll('.card'));
+  const tabs      = Array.from(document.querySelectorAll('.tab'));
+
+  let activeFilter = 'all';
+  let searchQuery  = '';
+
+  function normalize(s) { return s.toLowerCase(); }
+
+  function applyFilters() {
+    let visible = 0;
+    cards.forEach((card, i) => {
+      const skill    = SKILLS[i];
+      const catMatch = activeFilter === 'all' || skill.category === activeFilter;
+      const q        = normalize(searchQuery);
+      const textMatch = !q
+        || normalize(skill.name).includes(q)
+        || normalize(skill.description).includes(q)
+        || normalize(skill.when_to_use).includes(q);
+
+      if (catMatch && textMatch) {
+        card.classList.remove('hidden');
+        visible++;
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+    emptyEl.style.display = visible === 0 ? 'block' : 'none';
+  }
+
+  searchEl.addEventListener('input', e => {
+    searchQuery = e.target.value.trim();
+    applyFilters();
+  });
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      activeFilter = tab.dataset.filter;
+      applyFilters();
+    });
+  });
+</script>
+</body>
+</html>
